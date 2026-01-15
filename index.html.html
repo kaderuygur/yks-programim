@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>GHOST COMMANDER v25.1 | STABLE</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=JetBrains+Mono:wght@500&display=swap');
+
+        :root {
+            --bg: #010409; --card: #0d1117; --accent: #58a6ff;
+            --success: #238636; --warning: #d29922; --danger: #da3633;
+            --text: #c9d1d9; --border: #30363d; --panel: #161b22;
+        }
+
+        body {
+            background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif;
+            margin: 0; display: grid; grid-template-columns: 320px 1fr; height: 100vh; overflow: hidden;
+        }
+
+        /* YAN PANEL - FULL DOLU */
+        aside {
+            background: var(--card); border-right: 1px solid var(--border);
+            padding: 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto;
+        }
+
+        #display-name { font-size: 1.3rem; font-weight: 900; text-align: center; color: var(--accent); padding: 12px; background: var(--panel); border-radius: 10px; border: 1px solid var(--border); cursor: pointer; text-transform: uppercase;}
+
+        .stat-card { background: #000; border: 1px solid var(--border); padding: 12px; border-radius: 10px; position: relative;}
+        .stat-label { font-size: 0.55rem; color: #8b949e; letter-spacing: 1px; margin-bottom: 5px; font-weight: 800; text-transform: uppercase;}
+        .stat-value { font-family: 'JetBrains Mono'; font-size: 1.1rem; font-weight: 700; }
+        
+        /* MOTİVASYON VE HEDEF BLOKLARI */
+        .ghost-quote { font-style: italic; font-size: 0.75rem; color: var(--accent); border-left: 2px solid var(--accent); padding-left: 10px; margin-top: 10px;}
+        .status-badge { font-size: 0.6rem; background: var(--success); color: #fff; padding: 2px 8px; border-radius: 20px; font-weight: 900; position: absolute; top: 10px; right: 10px; }
+
+        /* ANA ALAN */
+        main { padding: 25px; overflow-y: auto; background: #010409; }
+        
+        .header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            background: var(--card); padding: 15px 25px; border-radius: 15px;
+            border: 1px solid var(--border); margin-bottom: 25px;
+        }
+
+        #subject-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; transition: 0.2s; position: relative; }
+        .card-header { padding: 15px; cursor: pointer; display: flex; flex-direction: column; gap: 5px; }
+        .card-title-row { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 0.95rem; }
+        .card-header-topic { font-size: 0.65rem; color: var(--accent); opacity: 0.8; font-weight: 400; font-style: italic; }
+        .card-content { display: none; padding: 15px; background: rgba(0,0,0,0.3); border-top: 1px solid var(--border); }
+        .card-content.open { display: block; }
+
+        input, textarea { background: #000; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px; width: 100%; margin-bottom: 8px; box-sizing: border-box; font-family: inherit; font-size: 0.85rem;}
+        
+        /* HAFTALIK TABLO */
+        .mega-table-container { background: var(--card); border: 1px solid var(--border); border-radius: 15px; padding: 20px; margin-top: 30px; min-width: 950px; }
+        .mega-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: 15px; }
+        .day-col { background: #000; border: 1px solid var(--border); border-radius: 10px; padding: 10px; min-height: 220px; }
+        .active-day { border: 1px solid var(--accent); background: rgba(88, 166, 255, 0.05); }
+        .day-title { text-align: center; font-size: 0.75rem; font-weight: 900; color: var(--accent); padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+        
+        .sub-entry { font-size: 0.65rem; margin-bottom: 8px; padding: 6px; background: var(--panel); border-radius: 6px; border-left: 3px solid var(--accent); }
+        .sub-entry-name { font-weight: 800; display: flex; justify-content: space-between; }
+        .sub-entry-topic { color: #8b949e; font-size: 0.6rem; margin-top: 4px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 3px; }
+
+        .btn-yt { background: #cc0000; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: 800; cursor: pointer; width: 100%; margin-bottom: 10px; font-size: 0.75rem; }
+        .lvl-btn { padding: 6px; border-radius: 5px; border: 1px solid var(--border); background: var(--panel); color: #fff; font-size: 0.65rem; cursor: pointer; flex:1; font-weight: 700;}
+        .active-kolay { background: var(--success) !important; }
+        .active-orta { background: var(--warning) !important; color: #000 !important; }
+        .active-zor { background: var(--danger) !important; }
+        
+        .save-btn { background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 10px; font-weight: 900; cursor: pointer; margin-top: auto; }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <div id="display-name" onclick="updateName()">İLYAS</div>
+        
+        <div class="stat-card" style="border-color: var(--accent)">
+            <div class="stat-label">YKS 2026 GERİ SAYIM</div>
+            <div id="yks-countdown" class="stat-value" style="font-size: 0.95rem; color: #fff;">...</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="status-badge">AKTİF</div>
+            <div class="stat-label">OPERASYON DURUMU</div>
+            <div class="stat-value" style="font-size: 0.8rem; color: var(--success)">SİSTEM STABİL</div>
+            <div class="ghost-quote">"Her test bir zaferdir."</div>
+        </div>
+
+        <div class="stat-card"><div class="stat-label">TOPLAM ODAK</div><div id="work-time" class="stat-value">00:00:00</div></div>
+        <div class="stat-card"><div class="stat-label">GÜNLÜK SORU</div><div id="daily-q-total" class="stat-value" style="color:var(--accent)">0</div></div>
+        
+        <div class="stat-card">
+            <div class="stat-label">POMODORO</div>
+            <div id="pomo-timer" class="stat-value" style="color: var(--danger)">25:00</div>
+            <div style="display:flex; gap:5px; margin-top:8px;">
+                <button onclick="pomo(25)" class="lvl-btn">BAŞLAT</button>
+                <button onclick="pomo(0)" class="lvl-btn">DUR</button>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:8px;">
+            <button onclick="changeDay(-1)" class="lvl-btn" style="padding:12px; font-size:1rem;">◀</button>
+            <button onclick="changeDay(1)" class="lvl-btn" style="padding:12px; font-size:1rem;">▶</button>
+        </div>
+        <div></div>
+        <button onclick="saveData()" class="save-btn">SİSTEMİ KAYDET</button>
+    </aside>
+
+    <main>
+        <div class="header">
+            <h2 id="date-display" style="margin:0; font-size: 1.2rem; letter-spacing: 1px;">...</h2>
+            <div id="digital-clock" style="font-family:'JetBrains Mono'; font-size: 1.4rem; color:var(--accent);">00:00:00</div>
+            <button id="chrono-btn" onclick="toggleChrono()" style="background: var(--success); border: none; padding: 10px 25px; border-radius: 10px; font-weight: 900; cursor: pointer; color:white;">MESAİ BAŞLAT</button>
+        </div>
+
+        <div id="subject-list"></div>
+        <button onclick="addSubject()" style="width:100%; background:transparent; border: 2px dashed var(--border); color: var(--accent); padding: 20px; border-radius: 12px; cursor: pointer; font-weight: 800; margin-top: 15px;">+ YENİ DERS EKLE</button>
+
+        <div style="overflow-x: auto;">
+            <div class="mega-table-container">
+                <div style="display:flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 12px;">
+                    <button onclick="changeWeek(-7)" style="color:var(--accent); background:none; border:none; cursor:pointer; font-weight:900;">◀ GEÇMİŞ</button>
+                    <span style="font-size: 0.9rem; font-weight: 900; letter-spacing: 3px;">HAFTALIK TAKİP ÇİZELGESİ</span>
+                    <button onclick="changeWeek(7)" style="color:var(--accent); background:none; border:none; cursor:pointer; font-weight:900;">GELECEK ▶</button>
+                </div>
+                <div class="mega-grid" id="mega-grid"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let offset = 0; let weekOffset = 0;
+        let subjects = JSON.parse(localStorage.getItem('ghost_v24_subjects')) || [];
+        let dailyData = JSON.parse(localStorage.getItem('ghost_v24_daily')) || {};
+        let userName = localStorage.getItem('ghost_name') || "İLYAS";
+
+        const getDayKey = (off = offset) => {
+            let d = new Date(); d.setDate(d.getDate() + off);
+            return d.toISOString().split('T')[0];
+        };
+
+        function load() {
+            document.getElementById('display-name').innerText = userName;
+            const key = getDayKey();
+            if(!dailyData[key]) dailyData[key] = { logs: {}, time: 0 };
+            
+            const list = document.getElementById('subject-list');
+            list.innerHTML = '';
+            let totalQ = 0;
+
+            subjects.forEach((sub, i) => {
+                if(!dailyData[key].logs[sub.name]) {
+                    // OTOMATİK SEVİYE KALDIRILDI - VARSAYILAN KOLAY BAŞLAR AMA SEN DEĞİŞTİRİRSİN
+                    dailyData[key].logs[sub.name] = { q:0, topic:'', level: 'kolay', analysis:'', books:{kolay:{n:'',p:''}, orta:{n:'',p:''}, zor:{n:'',p:''}}};
+                }
+                const log = dailyData[key].logs[sub.name];
+                totalQ += parseInt(log.q || 0);
+                const dot = log.level==='zor'?'var(--danger)':log.level==='orta'?'var(--warning)':'var(--success)';
+
+                list.innerHTML += `
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(${i})">
+                            <div class="card-title-row">
+                                <span><span style="color:${dot}">●</span> ${sub.name.toUpperCase()}</span>
+                                <span style="color:var(--accent); font-family:'JetBrains Mono'">${log.q} Q</span>
+                            </div>
+                            <div class="card-header-topic">${log.topic ? '📌 ' + log.topic : 'Konu girilmedi...'}</div>
+                        </div>
+                        <div class="card-content" id="content-${i}">
+                            <input type="text" value="${log.topic}" onchange="updateLog('${sub.name}','topic',this.value)" placeholder="Konu / Ünite">
+                            <input type="text" value="${sub.links.video || ''}" onchange="updateLink(${i},'video',this.value)" placeholder="YouTube Link">
+                            <button class="btn-yt" onclick="openYT('${sub.links.video}')">KAYNAĞI AÇ</button>
+                            <div style="display:flex; gap:4px; margin-bottom:8px;">
+                                <button class="lvl-btn ${log.level=='kolay'?'active-kolay':''}" onclick="setLvl('${sub.name}','kolay')">KOLAY</button>
+                                <button class="lvl-btn ${log.level=='orta'?'active-orta':''}" onclick="setLvl('${sub.name}','orta')">ORTA</button>
+                                <button class="lvl-btn ${log.level=='zor'?'active-zor':''}" onclick="setLvl('${sub.name}','zor')">ZOR</button>
+                            </div>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                                <input type="text" value="${log.books[log.level].n}" onchange="updateBook('${sub.name}','n',this.value)" placeholder="Kitap">
+                                <input type="text" value="${log.books[log.level].p}" onchange="updateBook('${sub.name}','p',this.value)" placeholder="Test No">
+                            </div>
+                            <input type="number" value="${log.q}" onchange="updateLog('${sub.name}','q',this.value)" placeholder="Soru Sayısı">
+                            <textarea onchange="updateLog('${sub.name}','analysis',this.value)" placeholder="Analiz & Notlar">${log.analysis}</textarea>
+                            <div style="display:flex; gap:10px;">
+                                <button onclick="hardDelete('${sub.name}')" style="flex:1; background:none; border:1px solid var(--danger); color:var(--danger); padding:8px; border-radius:5px; cursor:pointer; font-size:0.7rem; font-weight:bold;">BUGÜNÜ SİL</button>
+                                <button onclick="delSubject(${i})" style="flex:1; background:none; border:1px solid #444; color:#888; padding:8px; border-radius:5px; cursor:pointer; font-size:0.7rem; font-weight:bold;">DERSİ SİL</button>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+            document.getElementById('daily-q-total').innerText = totalQ;
+            document.getElementById('work-time').innerText = formatTime(dailyData[key].time || 0);
+            document.getElementById('date-display').innerText = new Date(key).toLocaleDateString('tr-TR', {day:'numeric', month:'long', weekday:'long'}).toUpperCase();
+            renderTable();
+        }
+
+        function updateYKS() {
+            const target = new Date('June 20, 2026 10:00:00').getTime();
+            const now = new Date().getTime();
+            const diff = target - now;
+            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((diff % (1000 * 60)) / 1000);
+            document.getElementById('yks-countdown').innerText = `${d}g ${h}s ${m}d ${s}sn`;
+        }
+
+        function renderTable() {
+            const grid = document.getElementById('mega-grid'); grid.innerHTML = '';
+            let start = new Date();
+            start.setDate(start.getDate() + weekOffset - (start.getDay() === 0 ? 6 : start.getDay() - 1));
+            for(let i=0; i<7; i++) {
+                let d = new Date(start); d.setDate(start.getDate() + i);
+                let k = d.toISOString().split('T')[0];
+                let data = dailyData[k] || { logs: {} };
+                let isFocused = (k === getDayKey());
+                let html = `<div class="day-col ${isFocused ? 'active-day' : ''}">
+                            <div class="day-title">${d.toLocaleDateString('tr-TR',{weekday:'short'}).toUpperCase()}<br><small style="opacity:0.5">${d.getDate()}/${d.getMonth()+1}</small></div>`;
+                for(let s in data.logs) {
+                    let log = data.logs[s];
+                    if(log && (parseInt(log.q) > 0 || log.topic.trim() !== '')) {
+                        let dot = log.level==='zor'?'var(--danger)':log.level==='orta'?'var(--warning)':'var(--success)';
+                        html += `<div class="sub-entry">
+                                    <div class="sub-entry-name"><span><span style="color:${dot}">●</span> ${s.substring(0,8)}</span><b>${log.q > 0 ? log.q : 'OKU'}</b></div>
+                                    ${log.topic ? `<div class="sub-entry-topic">${log.topic}</div>` : ''}
+                                 </div>`;
+                    }
+                }
+                grid.innerHTML += html + `</div>`;
+            }
+        }
+
+        function hardDelete(name) { if(confirm("Temizlensin mi?")) { delete dailyData[getDayKey()].logs[name]; load(); } }
+        function updateLog(n,k,v) { dailyData[getDayKey()].logs[n][k] = v; load(); }
+        function updateBook(n,f,v) { dailyData[getDayKey()].logs[n].books[dailyData[getDayKey()].logs[n].level][f] = v; }
+        function setLvl(n,l) { dailyData[getDayKey()].logs[n].level = l; load(); }
+        function updateLink(i,k,v) { subjects[i].links[k] = v; }
+        function openYT(l) { if(l) window.open(l.startsWith('http')?l:'https://'+l); }
+        function toggleCard(i) { document.getElementById(`content-${i}`).classList.toggle('open'); }
+        function addSubject() { let n = prompt("Ders?"); if(n) { subjects.push({name:n, links:{video:''}}); load(); } }
+        function delSubject(i) { if(confirm("Ders silinsin mi?")) { subjects.splice(i,1); load(); } }
+        function changeDay(s) { offset += s; load(); }
+        function changeWeek(v) { weekOffset += v; renderTable(); }
+        function formatTime(s) { return new Date(s * 1000).toISOString().substr(11, 8); }
+        function updateName() { let n = prompt("İsim?"); if(n) { userName = n; localStorage.setItem('ghost_name', n); load(); } }
+        function saveData() { localStorage.setItem('ghost_v24_daily', JSON.stringify(dailyData)); localStorage.setItem('ghost_v24_subjects', JSON.stringify(subjects)); alert("KAYDEDİLDİ"); }
+
+        let chrono, pInt;
+        function toggleChrono() {
+            const btn = document.getElementById('chrono-btn');
+            if(chrono) { clearInterval(chrono); chrono = null; btn.innerText = "MESAİ BAŞLAT"; btn.style.background="var(--success)"; }
+            else { chrono = setInterval(() => { dailyData[getDayKey()].time++; document.getElementById('work-time').innerText = formatTime(dailyData[getDayKey()].time); }, 1000); btn.innerText = "DURDUR"; btn.style.background="var(--danger)"; }
+        }
+        function pomo(m) {
+            clearInterval(pInt); if(m===0) { document.getElementById('pomo-timer').innerText = "25:00"; return; }
+            let s = m * 60;
+            pInt = setInterval(() => {
+                s--; let min = Math.floor(s/60), sec = s%60;
+                document.getElementById('pomo-timer').innerText = min + ":" + (sec<10?'0':'') + sec;
+                if(s<=0) { clearInterval(pInt); alert("POMODORO BİTTİ!"); }
+            }, 1000);
+        }
+
+        setInterval(updateYKS, 1000);
+        setInterval(() => { document.getElementById('digital-clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+        window.onload = load;
+    </script>
+</body>
+</html>
